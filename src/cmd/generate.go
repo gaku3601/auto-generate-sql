@@ -35,6 +35,10 @@ var generateCmd = &cobra.Command{
 		if err := logic.CheckExtension(path, []string{".xlsx"}); err != nil {
 			log.Fatal(err)
 		}
+		_, err := logic.NewOperationExcel(path)
+		if err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

@@ -28,5 +28,5 @@ func CheckExtension(path string, exts []string) error {
 			return nil
 		}
 	}
-	return errors.New(fmt.Sprintf("拡張子は%sを指定してください", exts))
+	return fmt.Errorf("拡張子は%sを指定してください", exts)
 }

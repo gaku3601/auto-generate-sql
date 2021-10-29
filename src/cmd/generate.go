@@ -34,6 +34,8 @@ var generateCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(generateCmd)
+	generateCmd.Flags().StringP("path", "p", "", "Excelのパスを指定")
+	_ = generateCmd.MarkFlagRequired("path")
 
 	// Here you will define your flags and configuration settings.
 

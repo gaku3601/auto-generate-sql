@@ -16,9 +16,9 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/gaku3601/auto-generate-sql/src/logic"
 	"github.com/spf13/cobra"
+	"log"
 )
 
 // generateCmd represents the generate command
@@ -28,7 +28,13 @@ var generateCmd = &cobra.Command{
 	Long: `指定したExcelファイルからSQLを自動生成します。
 -pで対象のExcelファイルを指定してください。`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("generate called")
+		path, _ := cmd.Flags().GetString("path")
+		if err := logic.IsExistFile(path); err != nil {
+			log.Fatal(err)
+		}
+		if err := logic.CheckExtension(path, []string{".xlsx"}); err != nil {
+			log.Fatal(err)
+		}
 	},
 }
 

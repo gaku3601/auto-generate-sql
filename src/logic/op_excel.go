@@ -3,6 +3,7 @@ package logic
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 )
@@ -48,7 +49,7 @@ func (o OperationExcel) Execute(outputPath string, fileName string) error {
 			if i == 0 {
 				headers = row
 			} else {
-				values = append(values, row)
+				values = append(values, o.replacementEnv(row))
 			}
 		}
 		sqls := CreateInserts(sheet, headers, values)
@@ -59,6 +60,18 @@ func (o OperationExcel) Execute(outputPath string, fileName string) error {
 		}
 	}
 	return nil
+}
+
+// excelに埋め込まれているenvの変数を値に置換します
+func (o OperationExcel) replacementEnv(row []string) []string {
+	var cols []string
+	for _, col := range row {
+		for key, value := range o.envs {
+			col = strings.Replace(col, fmt.Sprintf("{{%s}}", key), value, -1)
+		}
+		cols = append(cols, col)
+	}
+	return cols
 }
 
 // envシートが存在する場合、envの内容を格納する

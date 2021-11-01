@@ -8,7 +8,7 @@ import (
 func CreateInserts(table string, columns []string, values [][]string) []string {
 	var sqls []string
 	for _, val := range values {
-		sqls = append(sqls, fmt.Sprintf("INSERT INTO %s (%s) VALUES(%s)", table, columnsToString(columns), valuesToString(val)))
+		sqls = append(sqls, fmt.Sprintf("INSERT INTO %s (%s) VALUES(%s);", table, columnsToString(columns), valuesToString(val)))
 	}
 	return sqls
 }

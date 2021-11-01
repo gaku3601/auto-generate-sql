@@ -2,7 +2,6 @@ package logic
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
@@ -11,7 +10,6 @@ import (
 type OperationExcel struct {
 	file   *excelize.File
 	sheets []string
-	envs   map[string]string
 }
 
 // NewOperationExcel constructor
@@ -23,12 +21,10 @@ func NewOperationExcel(path string) (*OperationExcel, error) {
 	}
 	o.file = f
 	for _, sheet := range o.file.GetSheetMap() {
-		if sheet != "env" {
+		if sheet != "設定" {
 			o.sheets = append(o.sheets, sheet)
 		}
 	}
-	o.envs = make(map[string]string)
-	o.analyzeEnvs()
 	return o, nil
 }
 
@@ -47,9 +43,9 @@ func (o OperationExcel) Execute(outputPath string, fileName string) error {
 		var values [][]string
 		for i, row := range rows {
 			if i == 0 {
-				headers = row
+				headers = analyzeHeaders(row)
 			} else {
-				values = append(values, o.replacementEnv(row))
+				values = append(values, analyzeValues(row, len(headers)))
 			}
 		}
 		sqls := CreateInserts(sheet, headers, values)
@@ -62,25 +58,29 @@ func (o OperationExcel) Execute(outputPath string, fileName string) error {
 	return nil
 }
 
-// excelに埋め込まれているenvの変数を値に置換します
-func (o OperationExcel) replacementEnv(row []string) []string {
+// 値が入っているもののみheaderとして認識して返却する
+func analyzeHeaders(row []string) []string {
 	var cols []string
 	for _, col := range row {
-		for key, value := range o.envs {
-			col = strings.Replace(col, fmt.Sprintf("{{%s}}", key), value, -1)
+		if len(col) > 0 {
+			cols = append(cols, col)
 		}
-		cols = append(cols, col)
 	}
 	return cols
 }
 
-// envシートが存在する場合、envの内容を格納する
-func (o OperationExcel) analyzeEnvs() {
-	rows := o.file.GetRows("env")
-	for _, row := range rows {
-		if len(row) != 2 {
-			log.Fatal("環境変数はA列にkey、B列にvalueを必ず入力してください")
+// headerの列の数を実際の値であると認識して返却する
+func analyzeValues(row []string, headerCount int) []string {
+	var cols []string
+	for i, col := range row {
+		if i < headerCount {
+			cols = append(cols, deleteNewLineExcelCode(col))
 		}
-		o.envs[row[0]] = row[1]
 	}
+	return cols
+}
+
+// 不要な改行コードを削除する
+func deleteNewLineExcelCode(col string) string {
+	return strings.Replace(col, "_x000D_", "", -1)
 }

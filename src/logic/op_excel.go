@@ -2,6 +2,8 @@ package logic
 
 import (
 	"fmt"
+	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
@@ -25,6 +27,7 @@ func NewOperationExcel(path string) (*OperationExcel, error) {
 			o.sheets = append(o.sheets, sheet)
 		}
 	}
+	o.organizeSheets()
 	return o, nil
 }
 
@@ -39,6 +42,7 @@ func (o OperationExcel) Execute(outputPath string, fileName string) error {
 	// シート毎に処理する
 	for _, sheet := range o.sheets {
 		rows := o.file.GetRows(sheet)
+		table := extractTableName(sheet)
 		var headers []string
 		var values [][]string
 		for i, row := range rows {
@@ -48,7 +52,7 @@ func (o OperationExcel) Execute(outputPath string, fileName string) error {
 				values = append(values, analyzeValues(row, len(headers)))
 			}
 		}
-		sqls := CreateInserts(sheet, headers, values)
+		sqls := CreateInserts(table, headers, values)
 		for _, sql := range sqls {
 			if _, err := fmt.Fprintln(f.fp, sql); err != nil {
 				return err
@@ -83,4 +87,15 @@ func analyzeValues(row []string, headerCount int) []string {
 // 不要な改行コードを削除する
 func deleteNewLineExcelCode(col string) string {
 	return strings.Replace(col, "_x000D_", "", -1)
+}
+
+// シートを並べ替える
+func (o OperationExcel) organizeSheets() {
+	sort.SliceStable(o.sheets, func(i, j int) bool { return o.sheets[i] < o.sheets[j] })
+}
+
+// シートからテーブル名を抽出する
+func extractTableName(sheet string) string {
+	rep := regexp.MustCompile(`\d*\.`)
+	return rep.ReplaceAllString(sheet, "")
 }

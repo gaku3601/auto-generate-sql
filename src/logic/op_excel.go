@@ -1,6 +1,7 @@
 package logic
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
@@ -30,7 +31,33 @@ func NewOperationExcel(path string) (*OperationExcel, error) {
 	return o, nil
 }
 
-func (o OperationExcel) Execute() error {
+func (o OperationExcel) Execute(outputPath string, fileName string) error {
+	// SQLファイルを作成する
+	f, err := NewFile(fmt.Sprintf("%s/%s.%s", outputPath, fileName, "sql"))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	// シート毎に処理する
+	for _, sheet := range o.sheets {
+		rows := o.file.GetRows(sheet)
+		var headers []string
+		var values [][]string
+		for i, row := range rows {
+			if i == 0 {
+				headers = row
+			} else {
+				values = append(values, row)
+			}
+		}
+		sqls := CreateInserts(sheet, headers, values)
+		for _, sql := range sqls {
+			if _, err := fmt.Fprintln(f.fp, sql); err != nil {
+				return err
+			}
+		}
+	}
 	return nil
 }
 

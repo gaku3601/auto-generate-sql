@@ -16,9 +16,10 @@ limitations under the License.
 package cmd
 
 import (
+	"log"
+
 	"github.com/gaku3601/auto-generate-sql/src/logic"
 	"github.com/spf13/cobra"
-	"log"
 )
 
 // generateCmd represents the generate command
@@ -35,8 +36,12 @@ var generateCmd = &cobra.Command{
 		if err := logic.CheckExtension(path, []string{".xlsx"}); err != nil {
 			log.Fatal(err)
 		}
-		_, err := logic.NewOperationExcel(path)
+		o, err := logic.NewOperationExcel(path)
 		if err != nil {
+			log.Fatal(err)
+		}
+		info := logic.ExtractDirPathAndName(path)
+		if err := o.Execute(info.Path, info.Name); err != nil {
 			log.Fatal(err)
 		}
 	},

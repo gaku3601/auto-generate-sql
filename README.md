@@ -20,3 +20,10 @@ ags generate -p [対象エクセルファイル]
 ```
 を実行することで自動的にSQLファイルが作成される  
 SQLは対象エクセルファイルと同一のフォルダに配置される
+
+## debug
+
+```
+go run main.go generate -p ./example/ex1.xlsx
+```
+でxlsxファイルと同じ場所にsqlファイルが生成される

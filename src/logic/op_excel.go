@@ -23,7 +23,8 @@ func NewOperationExcel(path string) (*OperationExcel, error) {
 	}
 	o.file = f
 	for _, sheet := range o.file.GetSheetMap() {
-		if sheet != "設定" {
+		// 先頭に[数値.]が入っているシートを対象とする
+		if regexp.MustCompile("^*\\d\\.").MatchString(sheet) {
 			o.sheets = append(o.sheets, sheet)
 		}
 	}

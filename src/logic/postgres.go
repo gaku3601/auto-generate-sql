@@ -21,7 +21,9 @@ func columnsToString(columns []string) string {
 // 値をpostgresで格納可能なstringに変換します
 func valuesToString(vals []string) string {
 	for i := range vals {
-		if vals[i] != "" {
+		if vals[i] == "\"\"" {
+			vals[i] = "''"
+		} else if vals[i] != "" {
 			vals[i] = fmt.Sprintf("'%s'", vals[i])
 		} else {
 			vals[i] = "NULL"
